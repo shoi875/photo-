@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>撮影ログ Pro</title>
+    
+    <!-- iPhone App Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="撮影ログ">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1042/1042339.png">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --ios-blue: #007AFF;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #f2f2f7;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        input, select, textarea {
+            font-size: 16px !important;
+        }
+
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .segmented-control {
+            background: #e3e3e8;
+            padding: 2px;
+            border-radius: 8px;
+            display: flex;
+        }
+
+        .segmented-control button {
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .segmented-control button.active {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+    <!-- ヘッダー -->
+    <div class="safe-area-top bg-white border-b sticky top-0 z-30 shadow-sm">
+        <div class="px-4 py-3 flex items-center justify-between">
+            <h1 class="text-xl font-extrabold tracking-tight">撮影ログ Pro</h1>
+            <div class="segmented-control w-40">
+                <button id="viewToggleCard" class="active">カード</button>
+                <button id="viewToggleTable">リスト</button>
+            </div>
+        </div>
+    </div>
+
+    <main class="max-w-md mx-auto px-4 mt-6">
+        <!-- 入力フォーム -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+            <h2 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">新規記録</h2>
+            <form id="photoLogForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">日付</label>
+                        <input type="date" id="date" required class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">場所 / 会場</label>
+                        <input type="text" id="location" placeholder="撮影地" required class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">ISO感度</label>
+                        <input type="number" id="iso" placeholder="100" required class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">シャッター</label>
+                        <input type="text" id="shutter" placeholder="1/1000" required class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1">絞り (F値)</label>
+                        <input type="text" id="aperture" placeholder="f/2.8" required class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">ホワイトバランス</label>
+                    <select id="wb" class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
+                        <option value="Auto">Auto (自動)</option>
+                        <option value="太陽光">太陽光</option>
+                        <option value="日陰">日陰</option>
+                        <option value="曇天">曇天</option>
+                        <option value="白熱電球">白熱電球</option>
+                        <option value="蛍光灯">蛍光灯</option>
+                        <option value="フラッシュ">フラッシュ</option>
+                        <option value="マニュアル (K)">マニュアル (色温度K)</option>
+                    </select>
+                </div>
+
+                <div id="wbKDetails" class="hidden grid grid-cols-2 gap-2 p-3 bg-blue-50 rounded-xl">
+                    <div>
+                        <label class="block text-[10px] font-black text-blue-600 mb-1">色温度 (K)</label>
+                        <input type="number" id="wbKelvin" placeholder="5500" class="w-full px-3 py-1 text-sm rounded-lg border-none ring-1 ring-blue-200 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-blue-600 mb-1">補正 (G-M)</label>
+                        <input type="text" id="wbGM" placeholder="G1.0" class="w-full px-3 py-1 text-sm rounded-lg border-none ring-1 ring-blue-200 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">メモ</label>
+                    <textarea id="memo" rows="2" placeholder="使用レンズや天候など" class="w-full px-3 py-2 bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-[#007AFF] text-white font-bold py-3 rounded-xl shadow-lg active:opacity-70 transition-opacity">
+                    ログを保存する
+                </button>
+            </form>
+        </div>
+
+        <!-- 検索バー -->
+        <div class="sticky top-20 z-20 pb-4">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" id="searchInput" placeholder="検索..." class="pl-10 w-full px-4 py-2 bg-white rounded-full border-none shadow-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+        </div>
+
+        <!-- 表示エリア -->
+        <div id="logContainer" class="space-y-4"></div>
+        <div id="tableView" class="hidden bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-400 uppercase font-black">
+                    <tr><th class="px-4 py-3">日付/場所</th><th class="px-4 py-3">設定</th><th class="px-4 py-3">操作</th></tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
+            </table>
+        </div>
+        <p id="noDataMessage" class="hidden text-center py-12 text-gray-400 italic">データがありません</p>
+
+        <div class="mt-12 mb-8 text-center flex justify-center gap-4">
+            <button id="exportData" class="text-xs text-blue-500 font-bold">CSV出力</button>
+            <button id="clearAll" class="text-xs text-red-400 font-bold">全消去</button>
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-800/90 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl opacity-0 transition-all pointer-events-none z-50 text-sm font-bold">
+        保存完了
+    </div>
+
+    <script>
+        const form = document.getElementById('photoLogForm');
+        const logContainer = document.getElementById('logContainer');
+        const tableView = document.getElementById('tableView');
+        const tableBody = document.getElementById('tableBody');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const searchInput = document.getElementById('searchInput');
+        const wbSelect = document.getElementById('wb');
+        const wbKDetails = document.getElementById('wbKDetails');
+        const toast = document.getElementById('toast');
+        const btnCard = document.getElementById('viewToggleCard');
+        const btnTable = document.getElementById('viewToggleTable');
+
+        let currentView = 'card';
+        let logs = JSON.parse(localStorage.getItem('photoLogs')) || [];
+
+        document.getElementById('date').valueAsDate = new Date();
+
+        wbSelect.addEventListener('change', () => {
+            wbKDetails.classList.toggle('hidden', wbSelect.value !== 'マニュアル (K)');
+        });
+
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.replace('opacity-0', 'opacity-100');
+            setTimeout(() => toast.classList.replace('opacity-100', 'opacity-0'), 2000);
+        }
+
+        function deleteLog(id) {
+            if(!confirm('削除しますか？')) return;
+            logs = logs.filter(l => l.id !== id);
+            localStorage.setItem('photoLogs', JSON.stringify(logs));
+            render();
+        }
+
+        function render() {
+            const term = searchInput.value.toLowerCase();
+            const filtered = logs.filter(l => 
+                l.location.toLowerCase().includes(term) || l.memo.toLowerCase().includes(term) || l.date.includes(term)
+            ).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            noDataMessage.classList.toggle('hidden', filtered.length > 0);
+            logContainer.classList.toggle('hidden', currentView !== 'card' || filtered.length === 0);
+            tableView.classList.toggle('hidden', currentView !== 'table' || filtered.length === 0);
+
+            if (currentView === 'card') {
+                logContainer.innerHTML = filtered.map(log => `
+                    <div class="bg-white rounded-2xl p-4 shadow-sm relative mb-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="text-[10px] font-black text-blue-500">${log.date}</span>
+                                <h3 class="text-lg font-bold text-gray-800">${log.location}</h3>
+                            </div>
+                            <button onclick="deleteLog('${log.id}')" class="text-gray-300">×</button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-[11px] font-bold text-gray-600">
+                            <span class="px-2 py-1 bg-gray-100 rounded">ISO ${log.iso}</span>
+                            <span class="px-2 py-1 bg-gray-100 rounded">${log.shutter}</span>
+                            <span class="px-2 py-1 bg-gray-100 rounded">${log.aperture}</span>
+                            <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded">${log.wb}</span>
+                        </div>
+                        ${log.memo ? `<p class="text-xs text-gray-500 mt-2 pt-2 border-t">${log.memo}</p>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                tableBody.innerHTML = filtered.map(log => `
+                    <tr>
+                        <td class="px-4 py-3 font-bold">${log.location}<br><span class="text-[10px] font-normal text-gray-400">${log.date}</span></td>
+                        <td class="px-4 py-3 text-[11px]">${log.iso} · ${log.shutter} · ${log.aperture}</td>
+                        <td class="px-4 py-3"><button onclick="deleteLog('${log.id}')" class="text-red-400">削除</button></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            logs.push({
+                id: Date.now().toString(),
+                date: document.getElementById('date').value,
+                location: document.getElementById('location').value,
+                iso: document.getElementById('iso').value,
+                shutter: document.getElementById('shutter').value,
+                aperture: document.getElementById('aperture').value,
+                wb: document.getElementById('wb').value,
+                memo: document.getElementById('memo').value
+            });
+            localStorage.setItem('photoLogs', JSON.stringify(logs));
+            form.reset();
+            document.getElementById('date').valueAsDate = new Date();
+            render();
+            showToast('保存しました');
+        });
+
+        searchInput.addEventListener('input', render);
+        btnCard.onclick = () => { currentView = 'card'; btnCard.classList.add('active'); btnTable.classList.remove('active'); render(); };
+        btnTable.onclick = () => { currentView = 'table'; btnTable.classList.add('active'); btnCard.classList.remove('active'); render(); };
+        document.getElementById('clearAll').onclick = () => { if(confirm('全消去しますか？')) { logs=[]; localStorage.removeItem('photoLogs'); render(); }};
+        
+        document.getElementById('exportData').onclick = () => {
+            const csv = '日付,場所,ISO,SS,F値,WB,メモ\n' + logs.map(l => `${l.date},${l.location},${l.iso},${l.shutter},${l.aperture},${l.wb},${l.memo}`).join('\n');
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8;'}));
+            link.download = 'photo_logs.csv';
+            link.click();
+        };
+
+        render();
+    </script>
+</body>
+</html>
